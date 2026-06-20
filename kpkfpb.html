@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KPK dan FPB dengan Faktorisasi Prima</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* 1. SETUP DASAR - DIOPTIMALKAN UNTUK LAPTOP 14 INCI */
+        * { box-sizing: border-box; }
+        body { 
+            background-color: #cbd5e1; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 25px; 
+            margin: 0; 
+            padding: 25px 0; 
+            align-items: center; 
+        }
+        
+        .slide-container {
+            background-color: #ffffff;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            font-family: 'Lato', sans-serif;
+            height: 620px; 
+            justify-content: flex-start;
+            overflow: hidden;
+            padding: 40px 50px;
+            position: relative;
+            width: 1100px; 
+            border-radius: 12px;
+        }
+
+        .slide-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, #005088, #11caa0);
+            z-index: 2;
+        }
+
+        /* 2. TIPOGRAFI & KOMPONEN ELEMEN */
+        h1, h2, h3 { color: #005088; font-weight: 700; font-family: 'Poppins', sans-serif; margin: 0; }
+        h1 { font-size: 52px; }
+        .slide-title { font-size: 32px; font-weight: 600; margin-bottom: 20px; border-bottom: 4px solid #11caa0; padding-bottom: 6px; }
+        h3 { font-size: 24px; color: #005088; margin-bottom: 10px; }
+        p, li { color: #334155; font-size: 18px; line-height: 1.5; }
+
+        .content-area { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; width: 100%; }
+        .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; width: 100%; align-items: center; }
+        .tile-container { display: flex; gap: 20px; width: 100%; }
+        .tile { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; flex: 1; padding: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .tile .icon { color: #11caa0; font-size: 40px; margin-bottom: 10px; }
+        
+        .bullet-list { list-style: none; padding: 0; }
+        .bullet-list li { position: relative; padding-left: 40px; margin-bottom: 15px; font-size: 19px; }
+        .bullet-list i { color: #11caa0; font-size: 24px; left: 0; position: absolute; top: 2px; }
+
+        .image-wrapper { border-radius: 12px; overflow: hidden; height: 260px; width: 100%; box-shadow: 0 6px 15px rgba(0,0,0,0.08); }
+        .image-wrapper img { height: 100%; width: 100%; object-fit: cover; }
+
+        /* 3. TOMBOL & INPUT */
+        .btn { background: #005088; border: none; border-radius: 8px; color: white; cursor: pointer; font-family: 'Poppins'; font-size: 15px; font-weight: 600; padding: 10px 20px; transition: 0.2s; text-decoration: none; display: inline-block; text-align: center; }
+        .btn:hover { background: #003d66; transform: translateY(-1px); }
+        .btn-check { background: #11caa0; }
+        .btn-check:hover { background: #0fa683; }
+
+        .input-box { border: 2px solid #cbd5e1; border-radius: 6px; font-size: 18px; padding: 6px; width: 110px; text-align: center; outline: none; font-weight: bold; transition: 0.2s; }
+        .input-box.correct { border-color: #11caa0 !important; background: #ecfdf5 !important; color: #065f46; }
+        .input-box.wrong { border-color: #ef4444 !important; background: #fef2f2 !important; color: #991b1b; }
+
+        .discussion { display: none; margin-top: 12px; padding: 12px; background: #fffbeb; border-left: 5px solid #eab308; color: #854d0e; font-size: 16px; border-radius: 0 8px 8px 0; }
+        .slide-indicator { position: absolute; bottom: 15px; right: 25px; font-size: 13px; color: #94a3b8; font-weight: bold; }
+
+        /* 4. DESIGN KHUSUS INTERAKTIF */
+        /* Slide 5 Grid */
+        .grid-50 { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; width: 100%; }
+        .card-prime { background: #f1f5f9; border: 2px solid #cbd5e1; border-radius: 6px; cursor: pointer; padding: 8px; text-align: center; font-weight: 700; font-size: 16px; transition: 0.2s; user-select: none; }
+        .card-prime.green { background-color: #11caa0 !important; color: white !important; border-color: #11caa0 !important; }
+        .card-prime.red { background-color: #ef4444 !important; color: white !important; border-color: #ef4444 !important; }
+
+        /* Slide 7 & 10 Pohon Faktor */
+        .tree-wrapper { display: flex; flex-direction: column; align-items: center; gap: 8px; font-family: 'Poppins'; }
+        .tree-level { display: flex; justify-content: center; gap: 40px; position: relative; width: 100%; }
+        .tree-node { width: 65px; height: 42px; text-align: center; font-size: 18px; font-weight: bold; border: 2px solid #005088; border-radius: 8px; background: #fff; outline: none; }
+        .tree-node.correct { background-color: #11caa0 !important; color: white !important; border-color: #11caa0 !important; }
+        .tree-node.wrong { background-color: #ef4444 !important; color: white !important; border-color: #ef4444 !important; }
+        .tree-static { display: flex; align-items: center; justify-content: center; background: #005088; color: white; border: none; }
+
+        /* Slide 11 Battle Arena */
+        .battle-arena { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; width: 100%; }
+        .battle-card { background: #f8fafc; border: 3px solid #005088; border-radius: 12px; padding: 20px; text-align: center; }
+        .timer-display { font-family: monospace; font-size: 36px; font-weight: bold; color: #ef4444; margin: 10px 0; }
+        
+        table.custom-table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        table.custom-table th, table.custom-table td { border: 1px solid #cbd5e1; padding: 10px; text-align: center; font-size: 16px; }
+        table.custom-table th { background: #005088; color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="slide-container" id="slide1">
+        <div class="content-area" style="text-align: center;">
+            <div style="background: #11caa0; height: 6px; width: 120px; margin: 0 auto 15px; border-radius: 3px;"></div>
+            <h1>KPK dan FPB</h1>
+            <p style="font-size: 26px; margin-top: 5px; color: #11caa0; font-family: 'Poppins'; font-weight: 600;">Menggunakan Metode Faktorisasi Prima</p>
+            <div class="image-wrapper" style="margin-top: 25px; height: 280px;">
+                <img src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=1200&q=80" alt="Math Graphic">
+            </div>
+        </div>
+        <div class="slide-indicator">Slide 1 / 20</div>
+    </div>
+
+    <div class="slide-container" id="slide2">
+        <h2 class="slide-title">Mari Berpikir Sejenak! 🤔</h2>
+        <div class="content-area">
+            <div style="background: #f8fafc; border-left: 6px solid #005088; padding: 25px; border-radius: 0 12px 12px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                <p style="font-size: 23px; line-height: 1.6; color: #1e293b; margin: 0;">
+                    "Kemarin kita sudah belajar mencari KPK dan FPB menggunakan kelipatan dan faktor. Jika kalian diminta untuk mencari nilai KPK dan FPB dari <b>85</b> dan <b>102</b>, apakah kalian akan tetap mencari kelipatan dan faktornya? Jelas membutuhkan waktu yang lama. Oleh karena itu, ada namanya <b>Faktorisasi Prima</b>!"
+                </p>
+            </div>
+        </div>
+        <div class="slide-indicator">Slide 2 / 20</div>
+    </div>
+
+    <div class="slide-container" id="slide3">
+        <h2 class="slide-title">Tujuan Pembelajaran</h2>
+        <div class="content-area">
+            <p style="font-size: 20px; font-weight: 600; color: #005088; margin-bottom: 25px;">Setelah sesi hari ini, kalian diharapkan mampu mendominasi keahlian berikut:</p>
+            <ul class="bullet-list">
+                <li><i class="fa-solid fa-circle-check"></i> Siswa mengenal dan memahami karakteristik <b>Bilangan Prima</b>.</li>
+                <li><i class="fa-solid fa-circle-check"></i> Siswa dapat menentukan <b>Faktorisasi Prima</b> dari suatu bilangan asli secara tepat.</li>
+                <li><i class="fa-solid fa-circle-check"></i> Siswa dapat memecahkan nilai <b>KPK dan FPB</b> menggunakan metode faktorisasi prima.</li>
+            </ul>
+        </div>
+        <div class="slide-indicator">Slide 3 / 20</div>
+    </div>
+
+    <div class="slide-container" id="slide4">
+        <h2 class="slide-title">Apa itu Bilangan Prima?</h2>
+        <div class="content-area">
+            <div class="two-column">
+                <div>
+                    <h3>Definisi</h3>
+                    <p style="font-size: 19px;"><b>Bilangan prima</b> adalah bilangan asli yang lebih besar dari angka 1, yang <u>hanya memiliki tepat 2 faktor</u> pembagi: yaitu angka <b>1</b> dan <b>bilangan itu sendiri</b>.</p>
+                    
+                    <div style="background: #ecfdf5; padding: 15px; border-radius: 10px; border-left: 5px solid #11caa0; margin-top: 20px;">
+                        <p style="margin: 0; font-weight: bold; color: #065f46;">Contoh Deret Bilangan Prima:</p>
+                        <p style="margin: 5px 0 0 0; font-family: 'Poppins'; font-size: 24px; color: #005088; font-weight: 700;">2, 3, 5, 7, 11, 13, 17, 19, 23, ...</p>
+                    </div>
+                </div>
+                <div class="image-wrapper" style="height: 280px;">
+                    <img src="https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=600&q=80" alt="Numbers">
+                </div>
+            </div>
+        </div>
+        <div class="slide-indicator">Slide 4 / 20</div>
+    </div>
+
+    <div class="slide-container" id="slide5">
+        <h2 class="slide-title">Detektif Prima: Temukan Angkanya! 🕵️‍♂️</h2>
+        <div class="content-area">
+            <p style="margin: 0 0 15px 0; font-weight: bold; color: #005088; text-align: center;">Ketuk angka di bawah ini. Cari tahu mana yang termasuk bilangan prima!</p>
+            <div class="grid-50" id="gridSlide5"></div>
+        </div>
+        <div class="slide-indicator">Slide 5 / 20</div>
+    </div>
+
+    <div class="slide-container" id="slide6">
+        <h2 class="slide-title">Mengenal Faktorisasi Prima</h2>
+        <div class="content-area">
+            <div class="two-column">
+                <div class="tile" style="text-align: left; background: #fff; border: 2px solid #e2e8f0; padding: 25px;">
+                    <h3><i class="fa-solid fa-dna" style="color: #11caa0;"></i> "DNA" Suatu Bilangan</h3>
+                    <p style="font-size: 17px; margin-bottom: 12px;"><b>Faktorisasi prima</b> adalah cara menyatakan suatu bilangan komposit sebagai hasil perkalian dari bilangan-bilangan prima penyusunnya.</p>
+                    <p style="font-size: 17px;"><b>Bentuk Penulisan:</b> Umumnya disederhanakan menggunakan perkalian bilangan berpangkat.</p>
+                </div>
+                <div>
+                    <div style="background: #f1f5f9; padding: 20px; border-radius: 12px; border: 2px dashed #005088;">
+                        <h4 style="margin:0 0 10px 0; font-family:'Poppins'; color:#005088;">Contoh Nyata:</h4>
+                        <p style="margin: 5px 0;">Bilangan 12 jika dipecah perkalian primanya:</p>
+                        <p style="font-size: 22px; font-weight: bold; color: #005088; margin: 5px 0;">2 × 2 × 3</p>
+                        <p style="margin: 5px 0;">Bentuk Faktorisasi Primanya (pangkat):</p>
+                        <p style="font-size: 26px; font-weight: bold; color: #11caa0; margin: 5px 0;">2² × 3</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-indicator">Slide 6 / 20</div>
+    </div>
+
+    <div class="slide-container" id="slide7">
+        <h2 class="slide-title">Laboratorium Pohon Faktor 🧪</h2>
+        <div class="content-area">
+            <div class="two-column" style="align-items: center;">
+                <div class="tree-wrapper">
+                    <div class="tree-level"><div class="tree-node tree-static" id="t7-root">24</div></div>
+                    <div class="tree-level">
+                        <input type="number" class="tree-node s7-node-input" id="t7-l1" placeholder="Prima">
+                        <input type="number" class="tree-node s7-node-input" id="t7-r1" placeholder="Sisa">
+                    </div>
+                    <div class="tree-level">
+                        <div style="width:65px"></div>
+                        <input type="number" class="tree-node s7-node-input" id="t7-l2" placeholder="Prima">
+                        <input type="number" class="tree-node s7-node-input" id="t7-r2" placeholder="Sisa">
+                    </div>
+                    <div class="tree-level">
+                        <div style="width:130px"></div>
+                        <input type="number" class="tree-node s7-node-input" id="t7-l3" placeholder="Prima">
+                        <input type="number" class="tree-node s7-node-input" id="t7-r3" placeholder="Prima">
+                    </div>
+                </div>
+                
+                <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #cbd5e1;">
+                    <h3 style="font-size: 20px; margin-bottom: 15px;" id="t7-title-label">Melengkapi Bilangan: 24</h3>
+                    <div style="margin-bottom: 12px;">
+                        <p style="margin:0 0 4px 0; font-size:15px; font-weight:bold;">Bentuk Perkalian Prima:</p>
+                        <input type="text" id="t7-input-mult" class="input-box" style="width:100%; text-align:left;" placeholder="Contoh: 2 x 2 x 2 x 3">
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <p style="margin:0 0 4px 0; font-size:15px; font-weight:bold;">Bentuk Faktorisasi Prima (Pangkat):</p>
+                        <input type="text" id="t7-input-fact" class="input-box" style="width:100%; text-align:left;" placeholder="Contoh: 2^3 x 3">
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-check" onclick="checkSlide7Answers()">CEK JAWABAN</button>
+                        <button class="btn" style="background:#64748b;" onclick="loadNextSlide7Question()">GANTI BILANGAN</button>
+                    </div>
+                    <p id="t7-feedback" style="margin: 10px 0 0 0; font-weight: bold; font-size: 16px; height: 20px;"></p>
+                </div>
+            </div>
+        </div>
+        <div class="slide-indicator">Slide 7 / 20</div>
+    </div>
+
+    <div class="slide-container" id="slide8">
+        <h2 class="slide-title">Memahami Melalui Diagram Venn</h2>
+        <div class="content-area">
+            <div class="two-column">
+                <div>
+                    <h3>Konsep Distribusi Faktor</h3>
+                    <p style="font-size: 18px; line-height: 1.6;">Jika kita memasukkan faktor prima dari dua bilangan ke dalam diagram lingkaran:</p>
+                    <ul class="bullet-list">
+                        <li><i class="fa-solid fa-square" style="color: #11caa0;"></i> <b>FPB (Faktor Persekutuan):</b> Hanya mengambil angka prima yang berada tepat di dalam <b>irisan tengah</b> (daerah persekutuan).</li>
+                        <li><i class="fa-solid fa-circle" style="color: #005088;"></i> <b>KPK (Kelipatan Persekutuan):</b> Mengalikan <b>seluruh angka</b> tanpa terkecuali yang ada di dalam kedua lingkaran.</li>
+                    </ul>
+                </div>
+                <div class="image-wrapper" style="height: 280px; background: white; display: flex; align-items: center; justify-content: center;">
+                    <div style="position: relative; width: 300px; height: 180px;">
+                        <div style="position: absolute; left: 20px; width: 160px; height: 160px; border: 3px solid #005088; border-radius: 50%; background: rgba(0,80,136,0.1); display: flex; align-items: center; padding-left: 20px; font-weight: bold;">Bil A</div>
+                        <div style="position: absolute; right: 20px; width: 160px; height: 160px; border: 3px solid #11caa0; border-radius: 50%; background: rgba(17,202,160,0.1); display: flex; align-items: center; justify-content: flex-end; padding-right: 20px; font-weight: bold;">Bil B</div>
+                        <div style="position: absolute; left: 110px; top: 45px; width: 80px; height: 70px; background: #eab308; opacity: 0.8; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">FPB</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-indicator">Slide 8 / 20</div>
+    </div>
+
+    <div class="slide-container" id="slide9">
+        <h2 class="slide-title">Aturan Emas KPK & FPB Langsung</h2>
+        <div class="content-area">
+            <p style="text-align: center; font-size: 20px; margin-bottom: 25px; font-weight: bold; color: #334155;">Tanpa diagram gambar, kita bisa langsung menentukannya dengan rumus ini:</p>
+            <div class="tile-container">
+                <div class="tile" style="border-top: 6px solid #ef4444; background: #fff;">
+                    <div class="icon" style="color: #ef4444;"><i class="fa-solid fa-compress"></i></div>
+                    <h3>Aturan FPB</h3>
+                    <p style="font-size: 17px; text-align: left;">Pilih hanya faktor prima yang <b>sama</b> yang dimiliki oleh kedua bilangan, kemudian ambil yang memiliki pangkat <b>terkecil</b>.</p>
+                </div>
+                <div class="tile" style="border-top: 6px solid #11caa0; background: #fff;">
+                    <div class="icon" style="color: #11caa0;"><i class="fa-solid fa-expand"></i></div>
+                    <h3>Aturan KPK</h3>
+                    <p style="font-size: 17px; text-align: left;">Pilih <b>semua faktor prima</b> yang muncul dari kedua bilangan. Jika menemukan faktor yang sama, ambil yang memiliki pangkat <b>terbesar</b>.</p>
+                </div>
+            </div>
+        </div>
+        <div class="slide-indicator">Slide 9 / 20</div>
+    </div>
+
+    <div class="slide-container" id="slide10">
+        <h2 class="slide-title">Eksplorasi Kasus: Menghitung KPK & FPB</h2>
+        <div class="content-area" style="justify-content: flex-start; gap: 10px;">
+            <p style="margin:0; font-weight: bold; color: #005088;">Selesaikan langkah pemecahan untuk pasangan angka: <span id="s10-nums-label" style="font-size: 22px; color: #11caa0;">12 dan 18</span></p>
+            
+            <div style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 20px; align-items: flex-start;">
+                <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1;">
+                    <div style="display: flex; justify-content: space-around; margin-bottom: 8px;">
+                        <span id="s10-t1-name" style="font-weight: bold;">Pohon 12</span>
+                        <span id="s10-t2-name" style="font-weight: bold;">Pohon 18</span>
+                    </div>
+                    <div style="display: flex; gap: 15px; justify-content: center;">
+                        <div class="tree-wrapper" style="transform: scale(0.85); width: 50%;">
+                            <div class="tree-level"><input type="number" class="tree-node s10-node-input" id="s10-a-l1" placeholder="P"></div>
+                            <div class="tree-level"><input type="number" class="tree-node s10-node-input" id="s10-a-l2" placeholder="P"><input type="number" class="tree-node s10-node-input" id="s10-a-l3" placeholder="P"></div>
+                        </div>
+                        <div class="tree-wrapper" style="transform: scale(0.85); width: 50%;">
+                            <div class="tree-level"><input type="number" class="tree-node s10-node-input" id="s10-b-l1" placeholder="P"></div>
+                            <div class="tree-level"><input type="number" class="tree-node s10-node-input" id="s10-b-l2" placeholder="P"><input type="number" class="tree-node s10-node-input" id="s10-b-l3" placeholder="P"></div>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 5px;">
+                        <button class="btn btn-check" style="padding: 6px 15px;" onclick="verifySlide10Trees()">Cek Struktur Pohon</button>
+                    </div>
+                </div>
+
+                <div style="background: #fff; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; display:flex; flex-direction:column; gap:6px;">
+                    <div>
+                        <span style="font-size:14px; font-weight:bold;">Perkalian Prima A:</span><br>
+                        <div style="display:flex; gap:4px; align-items:center;">
+                            <input type="number" id="s10-mult-a1" class="input-box" style="width:45px; padding:3px;"> × 
+                            <input type="number" id="s10-mult-a2" class="input-box" style="width:45px; padding:3px;"> × 
+                            <input type="number" id="s10-mult-a3" class="input-box" style="width:45px; padding:3px;">
+                        </div>
+                    </div>
+                    <div>
+                        <span style="font-size:14px; font-weight:bold;">Perkalian Prima B:</span><br>
+                        <div style="display:flex; gap:4px; align-items:center;">
+                            <input type="number" id="s10-mult-b1" class="input-box" style="width:45px; padding:3px;"> × 
+                            <input type="number" id="s10-mult-b2" class="input-box" style="width:45px; padding:3px;"> × 
+                            <input type="number" id="s10-mult-b3" class="input-box" style="width:45px; padding:3px;">
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                        <div>
+                            <span style="font-size:13px; font-weight:bold;">Faktorisasi A (Pangkat):</span>
+                            <input type="text" id="s10-fact-a" class="input-box" style="width:100%;" placeholder="e.g. 2^2 x 3">
+                        </div>
+                        <div>
+                            <span style="font-size:13px; font-weight:bold;">Faktorisasi B (Pangkat):</span>
+                            <input type="text" id="s10-fact-b" class="input-box" style="width:100%;" placeholder="e.g. 2 x 3^2">
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px;">
+                        <div>
+                            <span style="color:#005088; font-weight:bold;">Nilai FPB:</span>
+                            <input type="number" id="s10-res-fpb" class="input-box" style="width:100%;">
+                        </div>
+                        <div>
+                            <span style="color:#11caa0; font-weight:bold;">Nilai KPK:</span>
+                            <input type="number" id="s10-res-kpk" class="input-box" style="width:100%;">
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:6px; margin-top: 8px;">
+                        <button class="btn btn-check" style="padding:6px 12px; flex:1;" onclick="verifySlide10Final()">CEK HASIL AKHIR</button>
+                        <button class="btn" style="background:#64748b; padding:6px 12px;" onclick="loadNextSlide10Question()">GANTI SOAL</button>
+                        <button class="btn" style="background:#f59e0b; padding:6px 12px;" onclick="toggleSlide10Discussion()">PEMBAHASAN</button>
+                    </div>
+                </div>
+            </div>
+            <div id="s10-discussion-block" class="discussion"></div>
+        </div>
+        <div class="slide-indicator">Slide 10 / 20</div>
+    </div>
+
+    <div class="slide-container" id="slide11">
+        <h2 class="slide-title">Tantangan Kilat: 10 Paket Soal Mandiri</h2>
+        <div class="content-area" style="overflow-y: auto; justify-content: flex-start;">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Pasangan Bilangan</th>
+                        <th>Input Jawaban FPB</th>
+                        <th>Input Jawaban KPK</th>
+                        <th>Aksi Verifikasi</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodySlide11">
+                    </tbody>
+            </table>
+        </div>
+        <div class="slide-indicator">Slide 11 / 20</div>
+    </div>
+
+    <div class="slide-container" id="slide12">
+        <h2 class="slide-title">Battle Challenge Arena! ⚔️</h2>
+        <div class="content-area">
+            <div style="display: flex; gap: 15px; margin-bottom: 15px; align-items: center; justify-content: center; background: #e2e8f0; padding: 10px; border-radius: 8px;">
+                <input type="text" id="p1-name-input" class="input-box" style="width: 180px;" placeholder="Nama Pemain 1 (Kiri)">
+                <button class="btn btn-check" onclick="triggerBattleEngineStart()"><i class="fa-solid fa-play"></i> MULAI PERTANDINGAN</button>
+                <input type="text" id="p2-name-input" class="input-box" style="width: 180px;" placeholder="Nama Pemain 2 (Kanan)">
+            </div>
+            
+            <div class="battle-arena">
+                <div class="battle-card" id="p1-card-area">
+                    <h3 id="p1-label-display">Pemain 1</h3>
+                    <p style="font-size: 16px; margin: 5px 0;">Selesaikan Kasus:</p>
+                    <div id="p1-question-text" style="font-size: 22px; font-weight: bold; color: #005088; margin: 10px 0;">-- PILIH PAKET SOAL --</div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; align-items: center; margin-bottom: 10px;">
+                        <div>FPB: <input type="number" id="p1-ans-fpb" class="input-box" style="width:90px;"></div>
+                        <div>KPK: <input type="number" id="p1-ans-kpk" class="input-box" style="width:90px;"></div>
+                    </div>
+                    <div class="timer-display" id="p1-timer-view">00:00.0</div>
+                    <button class="btn" style="background: #ef4444;" onclick="submitPlayerAnswer('P1')">SUBMIT JAWABAN</button>
+                </div>
+
+                <div class="battle-card" id="p2-card-area">
+                    <h3 id="p2-label-display">Pemain 2</h3>
+                    <p style="font-size: 16px; margin: 5px 0;">Selesaikan Kasus:</p>
+                    <div id="p2-question-text" style="font-size: 22px; font-weight: bold; color: #005088; margin: 10px 0;">-- PILIH PAKET SOAL --</div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; align-items: center; margin-bottom: 10px;">
+                        <div>FPB: <input type="number" id="p2-ans-fpb" class="input-box" style="width:90px;"></div>
+                        <div>KPK: <input type="number" id="p2-ans-kpk" class="input-box" style="width:90px;"></div>
+                    </div>
+                    <div class="timer-display" id="p2-timer-view">00:00.0</div>
+                    <button class="btn" style="background: #ef4444;" onclick="submitPlayerAnswer('P2')">SUBMIT JAWABAN</button>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 15px;">
+                <button class="btn" style="background: #64748b;" onclick="loadNextBattlePackage()">GANTI PAKET SOAL (5 VARIASI)</button>
+            </div>
+        </div>
+        <div class="slide-indicator">Slide 12 / 20</div>
+    </div>
+
+    <div class="slide-container" id="slide13">
+        <h2 class="slide-title">Papan Skor & Rekap Hasil Pertandingan</h2>
+        <div class="content-area">
+            <div class="two-column" style="align-items: stretch;">
+                <div style="background: white; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px;">
+                    <table class="custom-table" style="box-shadow: none;">
+                        <thead>
+                            <tr>
+                                <th>Ronde</th>
+                                <th id="th-p1-header">Pemain 1</th>
+                                <th id="th-p2-header">Pemain 2</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyScoreboard">
+                            <tr><td colspan="3" style="color: #64748b; font-style: italic;">Belum ada riwayat pertandingan resmi</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div style="background: #f1f5f9; border-radius: 12px; padding: 25px; display: flex; flex-direction: column; justify-content: center; text-align: center; border: 2px dashed #005088;">
+                    <div style="font-size: 50px; color: #eab308; margin-bottom: 10px;"><i class="fa-solid fa-trophy"></i></div>
+                    <h3>Pemenang Pertandingan</h3>
+                    <h2 id="winner-announcement-text" style="font-size: 28px; color: #11caa0; margin: 10px 0;">Menunggu Data Pertandingan...</h2>
+                    <p style="font-size: 15px; color: #64748b; margin: 0;" id="avg-summary-text"></p>
+                </div>
+            </div>
+        </div>
+        <div class="slide-indicator">Slide 13 / 20</div>
+    </div>
+
+    <div class="slide-container" id="slide14">
+        <h2 class="slide-title">Soal Cerita Aplikasi KPK - Studi Kasus #1</h2>
+        <div class="content-area">
+            <div class="two-column">
+                <div>
+                    <p style="font-size: 19px; line-height: 1.6;">Roni mengunjungi perpustakaan sekolah setiap <b>8 hari sekali</b>, sedangkan Danu mengunjungi perpustakaan setiap <b>12 hari sekali</b>. Jika mereka tidak sengaja bertemu hari ini, berapa hari lagikah mereka akan berkunjung secara bersamaan kembali?</p>
+                    <div style="margin-top: 25px; display: flex; align-items: center; gap: 10px;">
+                        <span style="font-weight: bold; font-size: 18px;">Jawabanmu (Hari):</span>
+                        <input type="number" id="storyKpk1Input" class="input-box" style="width: 120px;">
+                    </div>
+                    <div style="margin-top: 20px; display: flex; gap: 10px;">
+                        <button class="btn btn-check" onclick="verifyStorySlideAnswer('storyKpk1Input', 24, 'discKpk1')">CEK JAWABAN</button>
+                        <button class="btn" style="background:#f59e0b;" onclick="toggleExplanationDiv('discKpk1')">LIHAT PEMBAHASAN</button>
+                    </div>
+                    <div id="discKpk1" class="discussion">
+                        <b>Pembahasan Langkah:</b><br>
+                        Faktorisasi Prima 8 = 2³<br>
+                        Faktorisasi Prima 12 = 2² × 3<br>
+                        Sesuai aturan KPK, ambil seluruh faktor dengan pangkat tertinggi: 2³ × 3 = 8 × 3 = <b>24 hari</b>.
+                    </div>
+                </div>
+                <div class="image-wrapper">
+                    <img src="https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=600&q=80" alt="Library">
+                </div>
+            </div>
+        </div>
+        <div class="slide-indicator">Slide 14 / 20</div>
+    </div>
+
+    <div class="slide-container" id="slide15">
+        <h2 class="slide-title">Soal Cerita Aplikasi KPK - Studi Kasus #2</h2>
+        <div class="content-area">
+            <p style="font-size: 19px; line-height: 1.6;">Lampu mercusuar jalur A berkedip setiap <b>15 detik</b> sekali, sementara lampu mercusuar jalur B berkedip setiap <b>20 detik</b> sekali. Jika kedua lampu tersebut memancarkan cahaya bersamaan pada detik ke-0, pada detik ke berapakah mereka akan berkedip bersama lagi?</p>
+            <div style="margin-top: 20px; display: flex; align-items: center; gap: 10px;">
+                <span style="font-weight: bold; font-size: 18px;">Jawabanmu (Detik):</span>
+                <input type="number" id="storyKpk2Input" class="input-box" style="width: 120px;">
+            </div>
+            <div style="margin-top: 15px; display: flex; gap: 10px;">
+                <button class="btn btn-check" onclick="verifyStorySlideAnswer('storyKpk2Input', 60, 'discKpk2')">CEK JAWABAN</button>
+                <button class="btn" style="background:#f59e0b;" onclick="toggleExplanationDiv('discKpk2')">LIHAT PEMBAHASAN</button>
+            </div>
+            <div id="discKpk2" class="discussion">
+                <b>Pembahasan Langkah:</b><br>
+                Faktorisasi Prima 15 = 3 × 5<br>
+                Faktorisasi Prima 20 = 2² × 5<br>
+                Mencari KPK: Kalikan semua jenis faktor dengan pangkat tertinggi: 2² × 3 × 5 = 4 × 3 × 5 = <b>60 detik</b>.
+            </div>
+        </div>
+        <div class="slide-indicator">Slide 15 / 20</div>
+    </div>
+
+    <div class="slide-container" id="slide16">
+        <h2 class="slide-title">Soal Cerita Aplikasi FPB - Studi Kasus #1</h2>
+        <div class="content-area">
+            <div class="two-column">
+                <div class="image-wrapper">
+                    <img src="https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2?auto=format&fit=crop&w=600&q=80" alt="Fruit">
+                </div>
+                <div>
+                    <p style="font-size: 19px; line-height: 1.6;">Ibu membeli <b>20 buah jeruk</b> dan <b>30 buah apel</b>. Buah-buahan tersebut hendak ditata ke dalam plastik parcel pembagi dengan jumlah sama rata tanpa sisa. Berapa jumlah parcel paling banyak yang bisa dibuat Ibu?</p>
+                    <div style="margin-top: 25px; display: flex; align-items: center; gap: 10px;">
+                        <span style="font-weight: bold; font-size: 18px;">Jawabanmu (Parcel):</span>
+                        <input type="number" id="storyFpb1Input" class="input-box" style="width: 120px;">
+                    </div>
+                    <div style="margin-top: 20px; display: flex; gap: 10px;">
+                        <button class="btn btn-check" onclick="verifyStorySlideAnswer('storyFpb1Input', 10, 'discFpb1')">CEK JAWABAN</button>
+                        <button class="btn" style="background:#f59e0b;" onclick="toggleExplanationDiv('discFpb1')">LIHAT PEMBAHASAN</button>
+                    </div>
+                    <div id="discFpb1" class="discussion">
+                        <b>Pembahasan Langkah:</b><br>
+                        Faktorisasi Prima 20 = 2² × 5<br>
+                        Faktorisasi Prima 30 = 2 × 3 × 5<br>
+                        Sesuai aturan FPB, ambil hanya faktor bersekutu yang sama dengan pangkat terkecil: 2 × 5 = <b>10 parcel</b>.
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-indicator">Slide 16 / 20</div>
+    </div>
+
+    <div class="slide-container" id="slide17">
+        <h2 class="slide-title">Soal Cerita Aplikasi FPB - Studi Kasus #2</h2>
+        <div class="content-area">
+            <p style="font-size: 19px; line-height: 1.6;">Kakak membawa bungkusan logistik berisi <b>36 buku tulis</b> dan <b>48 pensil warna</b>. Semua alat tulis itu ingin dibagikan secara adil kepada anak-anak panti asuhan. Berapa anak maksimal yang bisa menerima paket dengan isi sama banyak?</p>
+            <div style="margin-top: 20px; display: flex; align-items: center; gap: 10px;">
+                <span style="font-weight: bold; font-size: 18px;">Jawabanmu (Anak):</span>
+                <input type="number" id="storyFpb2Input" class="input-box" style="width: 120px;">
+            </div>
+            <div style="margin-top: 15px; display: flex; gap: 10px;">
+                <button class="btn btn-check" onclick="verifyStorySlideAnswer('storyFpb2Input', 12, 'discFpb2')">CEK JAWABAN</button>
+                <button class="btn" style="background:#f59e0b;" onclick="toggleExplanationDiv('discFpb2')">LIHAT PEMBAHASAN</button>
+            </div>
+            <div id="discFpb2" class="discussion">
+                <b>Pembahasan Langkah:</b><br>
+                Faktorisasi 36 = 2² × 3²<br>
+                Faktorisasi 48 = 2⁴ × 3<br>
+                Mencari FPB: Pilih faktor yang bersekutu dengan pangkat terkecil: 2² × 3 = 4 × 3 = <b>12 anak</b>.
+            </div>
+        </div>
+        <div class="slide-indicator">Slide 17 / 20</div>
+    </div>
+
+    <div class="slide-container" id="slide18">
+        <h2 class="slide-title">Kesimpulan Pembelajaran</h2>
+        <div class="content-area">
+            <div class="tile-container">
+                <div class="tile" style="background: #fdf2f8; border: 2px solid #fbcfe8; text-align: left;">
+                    <h3 style="color:#db2777;"><i class="fa-solid fa-compress"></i> Metode FPB</h3>
+                    <p style="font-size:16px;">Ambil faktor persekutuan yang <b>sama saja</b>, gunakan nilai pangkat <b>terkecil</b>.</p>
+                    <p style="font-size:15px; font-style:italic; color:#64748b; margin-top:10px;">Kata kunci soal cerita: Pembagian sama rata, jenis kemasan terbanyak, jumlah wadah maksimal.</p>
+                </div>
+                <div class="tile" style="background: #ecfdf5; border: 2px solid #a7f3d0; text-align: left;">
+                    <h3 style="color:#059669;"><i class="fa-solid fa-expand"></i> Metode KPK</h3>
+                    <p style="font-size:16px;">Ambil <b>seluruh jenis faktor</b> tanpa kecuali. Jika ada yang sama, pilih pangkat <b>terbesar</b>.</p>
+                    <p style="font-size:15px; font-style:italic; color:#64748b; margin-top:10px;">Kata kunci soal cerita: Berkedip bersamaan lagi, jadwal rute bertemu kembali, menabung bersama.</p>
+                </div>
+            </div>
+        </div>
+        <div class="slide-indicator">Slide 18 / 20</div>
+    </div>
+
+    <div class="slide-container" id="slide19">
+        <div class="content-area" style="text-align: center;">
+            <h1 style="color: #005088; margin-bottom: 10px;">QUIZ TIME! 🚀</h1>
+            <p style="font-size: 22px; color: #475569; margin-bottom: 30px;">Saatnya menguji kompetensi faktorisasi pramuka kamu di arena kuis utama.</p>
+            <div>
+                <a href="https://wayground.com/admin/quiz/6a3627f5aec452dd7cbbb528" target="_blank" class="btn btn-check" style="font-size: 24px; padding: 15px 50px; border-radius: 50px; box-shadow: 0 10px 20px rgba(17,202,160,0.3);"><i class="fa-solid fa-gamepad"></i> MASUK KE WAYGROUND.COM</a>
+            </div>
+        </div>
+        <div class="slide-indicator">Slide 19 / 20</div>
+    </div>
+
+    <div class="slide-container" id="slide20">
+        <h2 class="slide-title">Refleksi Belajar</h2>
+        <div class="content-area">
+            <div class="two-column">
+                <ul class="bullet-list" style="margin: 0;">
+                    <li><i class="fa-solid fa-quote-left"></i> Apakah memecahkan KPK-FPB angka besar terasa lebih mudah menggunakan faktorisasi prima?</li>
+                    <li><i class="fa-solid fa-quote-left"></i> Apa perbedaan mendasar pencarian pangkat antara aturan KPK dan FPB?</li>
+                </ul>
+                <div style="text-align: center; background: #005088; color: white; padding: 30px; border-radius: 16px;">
+                    <h2 style="color: #11caa0; font-size: 36px; margin: 0 0 10px 0;">THANK YOU FOR TODAY!</h2>
+                    <p style="color: #fff; margin: 0; font-size: 18px;">Kalian luar biasa dan tetap semangat belajar matematika!</p>
+                    <div style="font-size: 40px; color: #eab308; margin-top: 15px;"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-indicator">Slide 20 / 20</div>
+    </div>
+
+
+    /* -------------------------- SCRIPT ENGINE CONTROLLER -------------------------- */
+    <script>
+        // 0. AUDIO FEEDBACK SYSTEM (Web Audio API & Speech Synthesis)
+        function triggerVoiceSynth(messageString) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // Hentikan ucapan sebelumnya jika ada antrean
+                const utterance = new SpeechSynthesisUtterance(messageString);
+                utterance.lang = 'id-ID';
+                utterance.rate = 1.0;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function triggerBuzzerChime(type) {
+            const context = new (window.AudioContext || window.webkitAudioContext)();
+            if (type === 'success') {
+                const osc = context.createOscillator();
+                const gain = context.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, context.currentTime); // D5
+                osc.frequency.setValueAtTime(880, context.currentTime + 0.1); // A5
+                gain.gain.setValueAtTime(0.1, context.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.3);
+                osc.connect(gain); gain.connect(context.destination);
+                osc.start(); osc.stop(context.currentTime + 0.3);
+            } else {
+                const osc = context.createOscillator();
+                const gain = context.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, context.currentTime); // Low buzz
+                gain.gain.setValueAtTime(0.1, context.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.25);
+                osc.connect(gain); gain.connect(context.destination);
+                osc.start(); osc.stop(context.currentTime + 0.25);
+            }
+        }
+
+
+        // SLIDE 5: GENERATOR KARTU DETEKTIF PRIMA
+        const primeArrayReference = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47];
+        const gridBoxContainer = document.getElementById('gridSlide5');
+        
+        for (let i = 1; i <= 50; i++) {
+            const cardNode = document.createElement('div');
+            cardNode.className = 'card-prime';
+            cardNode.innerText = i;
+            cardNode.onclick = function() {
+                if (primeArrayReference.includes(i)) {
+                    this.className = "card-prime green";
+                    triggerVoiceSynth("Ya, Itu Aku");
+                } else {
+                    this.className = "card-prime red";
+                    triggerVoiceSynth("Itu bukan aku");
+                }
+            };
+            gridBoxContainer.appendChild(cardNode);
+        }
+
+
+        // SLIDE 7: SIMULATOR POHON FAKTOR (5 REPOSITORY SOAL)
+        const slide7Repository = [
+            { target: 24, nodes: [2, 12, 2, 6, 2, 3], mult: "2 x 2 x 2 x 3", fact: "2^3 x 3" },
+            { target: 12, nodes: [2, 6, 2, 3, 0, 0], mult: "2 x 2 x 3", fact: "2^2 x 3", hideLastRow: true },
+            { target: 18, nodes: [2, 9, 3, 3, 0, 0], mult: "2 x 3 x 3", fact: "2 x 3^2", hideLastRow: true },
+            { target: 30, nodes: [2, 15, 3, 5, 0, 0], mult: "2 x 3 x 5", fact: "2 x 3 x 5", hideLastRow: true },
+            { target: 40, nodes: [2, 20, 2, 10, 2, 5], mult: "2 x 2 x 2 x 5", fact: "2^3 x 5" }
+        ];
+        let s7Pointer = 0;
+
+        function loadNextSlide7Question() {
+            s7Pointer = (s7Pointer + 1) % slide7Repository.length;
+            const currentItem = slide7Repository[s7Pointer];
+            
+            document.getElementById('t7-root').innerText = currentItem.target;
+            document.getElementById('t7-title-label').innerText = "Melengkapi Bilangan: " + currentItem.target;
+            
+            const inputs = document.querySelectorAll('.s7-node-input');
+            inputs.forEach(input => {
+                input.value = "";
+                input.className = "tree-node s7-node-input";
+                input.style.visibility = "visible";
+            });
+            
+            document.getElementById('t7-input-mult').value = "";
+            document.getElementById('t7-input-mult').className = "input-box";
+            document.getElementById('t7-input-fact').value = "";
+            document.getElementById('t7-input-fact').className = "input-box";
+            document.getElementById('t7-feedback').innerText = "";
+
+            if (currentItem.hideLastRow) {
+                document.getElementById('t7-l3').style.visibility = "hidden";
+                document.getElementById('t7-r3').style.visibility = "hidden";
+            }
+        }
+
+        function checkSlide7Answers() {
+            const currentItem = slide7Repository[s7Pointer];
+            let allNodesCorrect = true;
+            
+            const nodeIds = ['t7-l1', 't7-r1', 't7-l2', 't7-r2'];
+            if (!currentItem.hideLastRow) {
+                nodeIds.push('t7-l3', 't7-r3');
+            }
+
+            nodeIds.forEach((id, index) => {
+                const el = document.getElementById(id);
+                if (parseInt(el.value) === currentItem.nodes[index]) {
+                    el.className = "tree-node s7-node-input correct";
+                } else {
+                    el.className = "tree-node s7-node-input wrong";
+                    allNodesCorrect = false;
+                }
+            });
+
+            const userMult = document.getElementById('t7-input-mult').value.replace(/\s+/g, '').toLowerCase();
+            const correctMult = currentItem.mult.replace(/\s+/g, '').toLowerCase();
+            const userFact = document.getElementById('t7-input-fact').value.replace(/\s+/g, '').toLowerCase();
+            const correctFact = currentItem.fact.replace(/\s+/g, '').toLowerCase();
+
+            let multOk = (userMult === correctMult);
+            let factOk = (userFact === correctFact);
+
+            document.getElementById('t7-input-mult').className = "input-box " + (multOk ? "correct" : "wrong");
+            document.getElementById('t7-input-fact').className = "input-box " + (factOk ? "correct" : "wrong");
+
+            const feedbackNode = document.getElementById('t7-feedback');
+            if (allNodesCorrect && multOk && factOk) {
+                feedbackNode.innerText = "Good job! Faktorisasi Sempurna.";
+                feedbackNode.style.color = "#11caa0";
+                triggerVoiceSynth("good job");
+                triggerBuzzerChime('success');
+            } else {
+                feedbackNode.innerText = "Coba lagi, periksa nilai yang berwarna merah.";
+                feedbackNode.style.color = "#ef4444";
+                triggerVoiceSynth("try again");
+                triggerBuzzerChime('wrong');
+            }
+        }
+        loadNextSlide7Question(); // Run inisialisasi awal
+
+
+        // SLIDE 10: INTEGRATED COMPLETE PROBLEM GENERATOR (5 PAKET SOAL)
+        const slide10Repository = [
+            { numA: 12, numB: 18, treeA: [2,2,3], treeB: [2,3,3], multA: [2,2,3], multB: [2,3,3], factA: "2^2 x 3", factB: "2 x 3^2", fpb: 6, kpk: 36, disc: "12 = 2² × 3, 18 = 2 × 3². FPB (pangkat terkecil) = 2 × 3 = 6. KPK (pangkat terbesar) = 2² × 3² = 4 × 9 = 36." },
+            { numA: 8, numB: 12, treeA: [2,2,2], treeB: [2,2,3], multA: [2,2,2], multB: [2,2,3], factA: "2^3", factB: "2^2 x 3", fpb: 4, kpk: 24, disc: "8 = 2³, 12 = 2² × 3. FPB = 2² = 4. KPK = 2³ × 3 = 8 × 3 = 24." },
+            { numA: 15, numB: 20, treeA: [3,5,0], treeB: [2,2,5], multA: [3,5,0], multB: [2,2,5], factA: "3 x 5", factB: "2^2 x 5", fpb: 5, kpk: 60, disc: "15 = 3 × 5, 20 = 2² × 5. FPB = 5. KPK = 2² × 3 × 5 = 60." },
+            { numA: 20, numB: 30, treeA: [2,2,5], treeB: [2,3,5], multA: [2,2,5], multB: [2,3,5], factA: "2^2 x 5", factB: "2 x 3 x 5", fpb: 10, kpk: 60, disc: "20 = 2² × 5, 30 = 2 × 3 × 5. FPB = 2 × 5 = 10. KPK = 2² × 3 × 5 = 60." },
+            { numA: 16, numB: 24, treeA: [2,2,4], treeB: [2,2,6], multA: [2,2,4], multB: [2,2,6], factA: "2^4", factB: "2^3 x 3", fpb: 8, kpk: 48, disc: "Catatan: Pengisian ubin disesuaikan pangkalan prima terdekat. 16 = 2⁴, 24 = 2³ × 3. FPB = 2³ = 8. KPK = 2⁴ × 3 = 48.", specialTree: true } 
+        ];
+        let s10Pointer = 0;
+
+        function loadNextSlide10Question() {
+            s10Pointer = (s10Pointer + 1) % slide10Repository.length;
+            const item = slide10Repository[s10Pointer];
+            
+            document.getElementById('s10-nums-label').innerText = item.numA + " dan " + item.numB;
+            document.getElementById('s10-t1-name').innerText = "Pohon " + item.numA;
+            document.getElementById('s10-t2-name').innerText = "Pohon " + item.numB;
+
+            const inputNodes = document.querySelectorAll('.s10-node-input, #slide10 .input-box');
+            inputNodes.forEach(n => {
+                n.value = "";
+                n.className = n.className.replace('correct', '').replace('wrong', '').trim();
+            });
+            
+            document.getElementById('s10-discussion-block').style.display = "none";
+        }
+
+        function verifySlide10Trees() {
+            const item = slide10Repository[s10Pointer];
+            const nodes = [
+                {id: 's10-a-l1', val: item.treeA[0]}, {id: 's10-a-l2', val: item.treeA[1]}, {id: 's10-a-l3', val: item.treeA[2]},
+                {id: 's10-b-l1', val: item.treeB[0]}, {id: 's10-b-l2', val: item.treeB[1]}, {id: 's10-b-l3', val: item.treeB[2]}
+            ];
+            nodes.forEach(n => {
+                const el = document.getElementById(n.id);
+                if(parseInt(el.value) === n.val) el.className = "tree-node s10-node-input correct";
+                else el.className = "tree-node s10-node-input wrong";
+            });
+        }
+
+        function verifySlide10Final() {
+            const item = slide10Repository[s10Pointer];
+            
+            let mA1 = (parseInt(document.getElementById('s10-mult-a1').value) === item.multA[0]);
+            let mA2 = (parseInt(document.getElementById('s10-mult-a2').value) === item.multA[1]);
+            let mA3 = item.multA[2] === 0 ? true : (parseInt(document.getElementById('s10-mult-a3').value) === item.multA[2]);
+            
+            let mB1 = (parseInt(document.getElementById('s10-mult-b1').value) === item.multB[0]);
+            let mB2 = (parseInt(document.getElementById('s10-mult-b2').value) === item.multB[1]);
+            let mB3 = (parseInt(document.getElementById('s10-mult-b3').value) === item.multB[2]);
+
+            document.getElementById('s10-mult-a1').className = "input-box " + (mA1?"correct":"wrong");
+            document.getElementById('s10-mult-a2').className = "input-box " + (mA2?"correct":"wrong");
+            document.getElementById('s10-mult-a3').className = "input-box " + (mA3?"correct":"wrong");
+            document.getElementById('s10-mult-b1').className = "input-box " + (mB1?"correct":"wrong");
+            document.getElementById('s10-mult-b2').className = "input-box " + (mB2?"correct":"wrong");
+            document.getElementById('s10-mult-b3').className = "input-box " + (mB3?"correct":"wrong");
+
+            let fA = document.getElementById('s10-fact-a').value.replace(/\s+/g,'') === item.factA.replace(/\s+/g,'');
+            let fB = document.getElementById('s10-fact-b').value.replace(/\s+/g,'') === item.factB.replace(/\s+/g,'');
+            document.getElementById('s10-fact-a').className = "input-box " + (fA?"correct":"wrong");
+            document.getElementById('s10-fact-b').className = "input-box " + (fB?"correct":"wrong");
+
+            let fpbOk = (parseInt(document.getElementById('s10-res-fpb').value) === item.fpb);
+            let kpkOk = (parseInt(document.getElementById('s10-res-kpk').value) === item.kpk);
+            document.getElementById('s10-res-fpb').className = "input-box " + (fpbOk?"correct":"wrong");
+            document.getElementById('s10-res-kpk').className = "input-box " + (kpkOk?"correct":"wrong");
+
+            if(mA1 && mA2 && mA3 && mB1 && mB2 && mB3 && fA && fB && fpbOk && kpkOk) {
+                triggerVoiceSynth("good job"); triggerBuzzerChime('success');
+            } else {
+                triggerVoiceSynth("try again"); triggerBuzzerChime('wrong');
+            }
+        }
+
+        function toggleSlide10Discussion() {
+            const block = document.getElementById('s10-discussion-block');
+            block.innerText = slide10Repository[s10Pointer].disc;
+            block.style.display = (block.style.display === 'block') ? 'none' : 'block';
+        }
+        loadNextSlide10Question();
+
+
+        // SLIDE 11: 10 SOAL MANDIRI GENERATOR TABLE
+        const slide11DataMatrix = [
+            {a: 6, b: 9, fpb: 3, kpk: 18}, {a: 10, b: 25, fpb: 5, kpk: 50},
+            {a: 14, b: 21, fpb: 7, kpk: 42}, {a: 12, b: 15, fpb: 3, kpk: 60},
+            {a: 16, b: 20, fpb: 4, kpk: 80}, {a: 18, b: 27, fpb: 9, kpk: 54},
+            {a: 24, b: 30, fpb: 6, kpk: 120}, {a: 20, b: 25, fpb: 5, kpk: 100},
+            {a: 22, b: 33, fpb: 11, kpk: 66}, {a: 36, b: 48, fpb: 12, kpk: 144}
+        ];
+        const tbodyS11 = document.getElementById('tbodySlide11');
+        slide11DataMatrix.forEach((item, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${index + 1}</td>
+                <td style="font-weight:bold; color:#005088;">${item.a} & ${item.b}</td>
+                <td><input type="number" id="s11-fpb-${index}" class="input-box" style="width:90px;"></td>
+                <td><input type="number" id="s11-kpk-${index}" class="input-box" style="width:90px;"></td>
+                <td><button class="btn btn-check" style="padding:5px 15px;" onclick="verifySlide11Row(${index})">Verifikasi</button></td>
+            `;
+            tbodyS11.appendChild(tr);
+        });
+
+        function verifySlide11Row(index) {
+            const rowData = slide11DataMatrix[index];
+            const fpbInput = document.getElementById(`s11-fpb-${index}`);
+            const kpkInput = document.getElementById(`s11-kpk-${index}`);
+
+            let fpbCorrect = (parseInt(fpbInput.value) === rowData.fpb);
+            let kpkCorrect = (parseInt(kpkInput.value) === rowData.kpk);
+
+            fpbInput.className = "input-box " + (fpbCorrect ? "correct" : "wrong");
+            kpkInput.className = "input-box " + (kpkCorrect ? "correct" : "wrong");
+
+            if(fpbCorrect && kpkCorrect) {
+                triggerVoiceSynth("good job"); triggerBuzzerChime('success');
+            } else {
+                triggerVoiceSynth("try again"); triggerBuzzerChime('wrong');
+            }
+        }
+
+
+        // SLIDE 12 & 13: BATTLE CHALLENGE ARENA ENGINE
+        const battlePackages = [
+            { p1Q: "Angka 15 dan 25", p1Fpb: 5, p1Kpk: 75, p2Q: "Angka 12 dan 16", p2Fpb: 4, p2Kpk: 48 },
+            { p1Q: "Angka 9 dan 15", p1Fpb: 3, p1Kpk: 45, p2Q: "Angka 8 dan 20", p2Fpb: 4, p2Kpk: 40 },
+            { p1Q: "Angka 14 dan 35", p1Fpb: 7, p1Kpk: 70, p2Q: "Angka 18 dan 30", p2Fpb: 6, p2Kpk: 90 },
+            { p1Q: "Angka 20 dan 24", p1Fpb: 4, p1Kpk: 120, p2Q: "Angka 16 dan 24", p2Fpb: 8, p2Kpk: 48 },
+            { p1Q: "Angka 27 dan 36", p1Fpb: 9, p1Kpk: 108, p2Q: "Angka 24 dan 36", p2Fpb: 12, p2Kpk: 72 }
+        ];
+        let battlePointer = 0;
+        let t1Time = 0, t2Time = 0;
+        let t1Interval, t2Interval;
+        let t1Active = false, t2Active = false;
+        let battleLogs = [];
+
+        function loadNextBattlePackage() {
+            battlePointer = (battlePointer + 1) % battlePackages.length;
+            document.getElementById('p1-question-text').innerText = battlePackages[battlePointer].p1Q;
+            document.getElementById('p2-question-text').innerText = battlePackages[battlePointer].p2Q;
+            
+            // Clear fields
+            document.getElementById('p1-ans-fpb').value = ""; document.getElementById('p1-ans-fpb').className="input-box";
+            document.getElementById('p1-ans-kpk').value = ""; document.getElementById('p1-ans-kpk').className="input-box";
+            document.getElementById('p2-ans-fpb').value = ""; document.getElementById('p2-ans-fpb').className="input-box";
+            document.getElementById('p2-ans-kpk').value = ""; document.getElementById('p2-ans-kpk').className="input-box";
+            
+            clearInterval(t1Interval); clearInterval(t2Interval);
+            document.getElementById('p1-timer-view').innerText = "00:00.0";
+            document.getElementById('p2-timer-view').innerText = "00:00.0";
+            t1Active = false; t2Active = false;
+        }
+
+        function triggerBattleEngineStart() {
+            let p1Name = document.getElementById('p1-name-input').value || "Pemain 1";
+            let p2Name = document.getElementById('p2-name-input').value || "Pemain 2";
+            
+            document.getElementById('p1-label-display').innerText = p1Name;
+            document.getElementById('p2-label-display').innerText = p2Name;
+            document.getElementById('th-p1-header').innerText = p1Name;
+            document.getElementById('th-p2-header').innerText = p2Name;
+
+            document.getElementById('p1-question-text').innerText = battlePackages[battlePointer].p1Q;
+            document.getElementById('p2-question-text').innerText = battlePackages[battlePointer].p2Q;
+
+            t1Time = 0; t2Time = 0;
+            t1Active = true; t2Active = true;
+
+            clearInterval(t1Interval);
+            t1Interval = setInterval(() => {
+                t1Time += 0.1;
+                document.getElementById('p1-timer-view').innerText = formatTimerDisplay(t1Time);
+            }, 100);
+
+            clearInterval(t2Interval);
+            t2Interval = setInterval(() => {
+                t2Time += 0.1;
+                document.getElementById('p2-timer-view').innerText = formatTimerDisplay(t2Time);
+            }, 100);
+        }
+
+        function formatTimerDisplay(secondsInput) {
+            let mins = Math.floor(secondsInput / 60);
+            let secs = Math.floor(secondsInput % 60);
+            let tenths = Math.floor((secondsInput % 1) * 10);
+            return `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}.${tenths}`;
+        }
+
+        function submitPlayerAnswer(playerMode) {
+            const data = battlePackages[battlePointer];
+            if(playerMode === 'P1' && t1Active) {
+                let fVal = parseInt(document.getElementById('p1-ans-fpb').value);
+                let kVal = parseInt(document.getElementById('p1-ans-kpk').value);
+                if(fVal === data.p1Fpb && kVal === data.p1Kpk) {
+                    t1Active = false; clearInterval(t1Interval);
+                    document.getElementById('p1-ans-fpb').className = "input-box correct";
+                    document.getElementById('p1-ans-kpk').className = "input-box correct";
+                    triggerBuzzerChime('success'); checkBattleCompletion();
+                } else {
+                    document.getElementById('p1-ans-fpb').className = "input-box wrong";
+                    document.getElementById('p1-ans-kpk').className = "input-box wrong";
+                    triggerBuzzerChime('wrong');
+                }
+            } else if(playerMode === 'P2' && t2Active) {
+                let fVal = parseInt(document.getElementById('p2-ans-fpb').value);
+                let kVal = parseInt(document.getElementById('p2-ans-kpk').value);
+                if(fVal === data.p2Fpb && kVal === data.p2Kpk) {
+                    t2Active = false; clearInterval(t2Interval);
+                    document.getElementById('p2-ans-fpb').className = "input-box correct";
+                    document.getElementById('p2-ans-kpk').className = "input-box correct";
+                    triggerBuzzerChime('success'); checkBattleCompletion();
+                } else {
+                    document.getElementById('p2-ans-fpb').className = "input-box wrong";
+                    document.getElementById('p2-ans-kpk').className = "input-box wrong";
+                    triggerBuzzerChime('wrong');
+                }
+            }
+        }
+
+        function checkBattleCompletion() {
+            if(!t1Active && !t2Active) {
+                battleLogs.push({ronde: battleLogs.length + 1, p1Time: t1Time, p2Time: t2Time});
+                renderScoreboardAndWinner();
+            }
+        }
+
+        function renderScoreboardAndWinner() {
+            const tbody = document.getElementById('tbodyScoreboard');
+            tbody.innerHTML = "";
+            let totalP1 = 0, totalP2 = 0;
+
+            battleLogs.forEach(log => {
+                totalP1 += log.p1Time;
+                totalP2 += log.p2Time;
+                let tr = document.createElement('tr');
+                tr.innerHTML = `<td>Ronde ${log.ronde}</td><td>${log.p1Time.toFixed(1)}s</td><td>${log.p2Time.toFixed(1)}s</td>`;
+                tbody.appendChild(tr);
+            });
+
+            let avgP1 = totalP1 / battleLogs.length;
+            let avgP2 = totalP2 / battleLogs.length;
+            let nameP1 = document.getElementById('p1-name-input').value || "Pemain 1";
+            let nameP2 = document.getElementById('p2-name-input').value || "Pemain 2";
+
+            let winnerName = (avgP1 < avgP2) ? nameP1 : nameP2;
+            if(avgP1 === avgP2) winnerName = "SERI!";
+
+            document.getElementById('winner-announcement-text').innerText = (winnerName === "SERI!") ? "Hasil Seimbang!" : winnerName + " 👑";
+            document.getElementById('avg-summary-text').innerText = `Rata-rata Kecepatan:\n${nameP1}: ${avgP1.toFixed(1)}s | ${nameP2}: ${avgP2.toFixed(1)}s`;
+        }
+
+
+        // SLIDE 14 - 17: SOAL CERITA VALIDATION ENGINE
+        function verifyStorySlideAnswer(inputId, correctNum, discussionId) {
+            const el = document.getElementById(inputId);
+            if(parseInt(el.value) === correctNum) {
+                el.className = "input-box correct";
+                document.getElementById(discussionId).style.display = "block";
+                triggerVoiceSynth("good job"); triggerBuzzerChime('success');
+            } else {
+                el.className = "input-box wrong";
+                triggerVoiceSynth("try again"); triggerBuzzerChime('wrong');
+            }
+        }
+
+        function toggleExplanationDiv(id) {
+            const target = document.getElementById(id);
+            target.style.display = (target.style.display === 'block') ? 'none' : 'block';
+        }
+    </script>
+</body>
+</html>
